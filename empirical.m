@@ -15,8 +15,6 @@ crsplag.wt=crsplag.me;
 crsp=innerjoin(crsp,crsplag(:,{'ereturn','yymm','permno','wt'}),'Keys',{'yymm','permno'});
 crsp.me=log(crsp.me);
 
-%% test
-%% test2
 
 %% portfolio analysis
 
