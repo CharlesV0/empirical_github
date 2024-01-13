@@ -16,3 +16,4 @@ crsp=innerjoin(crsp,crsplag(:,{'ereturn','yymm','permno','wt'}),'Keys',{'yymm','
 crsp.me=log(crsp.me);
 
 %% test
+%% test2
