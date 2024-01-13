@@ -76,3 +76,23 @@ bar(Sharpe)
 title('Sharpe Ratio')
 
 sgtitle('Sort by size')
+
+%% Fama-Macbeth
+crsp1=innerjoin(crsp,beta,'Keys',{'permno','date'});
+
+flexvar=[crsp1.beta,crsp1.me,crsp1.beme];
+
+[G,jdate]=findgroups(crsp1.date);
+
+myfun=@(x1,x2){regress(x1,x2)'};
+loading=cell2mat(splitapply(myfun,crsp1.ereturn,[ones(height(crsp1),1) flexvar],G));
+
+
+coef=zeros(size(loading,2),1);
+t=zeros(size(loading,2),1);
+for i=1:size(loading,2)
+    coef(i)=mean(loading(:,i));
+    t(i)=mean(loading(:,i))*sqrt(size(loading,1))/std(loading(:,i));
+end
+ttable=array2table(t,'RowNames',{'cons','beta','size','b-m ratio'});
+disp(ttable)
