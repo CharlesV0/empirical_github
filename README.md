@@ -1,4 +1,4 @@
-### The allocation of the tasks is as follows:
+## The allocation of the tasks is as follows:
 ##### The basic section is an cooperated task to learn how to use Github. Each of the three learned it together and understood how Guthub works well.
 ##### The advanced section is allocated as follows.
 -  Kanru Wang (王侃如): The leader of the group. He arranged the schedule to finish the tasks, and made great contribution in cleaning the data in Q2. He also made a big contribution in debugging.
