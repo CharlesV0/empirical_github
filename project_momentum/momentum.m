@@ -1,42 +1,24 @@
 %% Q1
-clear
+clear ;
 
-tic
+% read data and stack
 
-% assign variable type
-repeatedElement = 'double'; 
-numRepeats = 125;
-repeatedCell = repmat({repeatedElement}, 1, numRepeats);
-varTypes = {['string','string',repeatedCell]};
-clear numRepeats repeatedElement repeatedCell;
-% varTypes = {'string', 'string', 'double'};
+return_m=readtable('return_monthly.xlsx','ReadVariableNames',true,'PreserveVariableNames',true,'Format','auto');
 
-% read data
-return_m=readtable('return_monthly.xlsx', 'ReadVariableNames', true, 'PreserveVariableNames', true, 'Format', 'auto');
-
-% 'VariableTypes', varTypes
-
-market_cap_lm=readtable('me_lag.xlsx','ReadVariableNames',true,'PreserveVariableNames',true,'Format','auto');
-
-% stack into long table
 stack_return = stack(return_m, return_m.Properties.VariableNames(3:end),'NewDataVariableName', 'month_return',...
 'IndexVariableName', 'date');
 
+market_cap_lm=readtable('me_lag.xlsx','ReadVariableNames',true,'PreserveVariableNames',true,'Format','auto');
 stack_lme = stack(market_cap_lm, market_cap_lm.Properties.VariableNames(3:end),'NewDataVariableName', 'lme',...
 'IndexVariableName', 'date');
 
-% merge
-merge_table = innerjoin(stack_return,stack_lme);
-
 % clear NaN
+merge_table = innerjoin(stack_return,stack_lme);
 merge_table = rmmissing(merge_table);
 
-% clear stack_lme return_m market_cap_lm stack_return
-toc
 
 %% Q2
-tic
-% create a new dataset with previous K=frequency months return
+% step 1: create a new dataset with previous K=frequency months return
 all_codes = merge_table.code;
 code_set = unique(all_codes);
 datasets = cell(1, numel(code_set));
@@ -46,7 +28,7 @@ for i = 1:numel(code_set)
     data = merge_table(strcmp(merge_table.code, codes), :);
     
     for k = [1,3,6,12,24]
-        column_name = strcat('k = ', num2str(k));
+        column_name = strcat('k', num2str(k));
         if height(data) <= k
             data.(column_name) = NaN(height(data));
         end
@@ -62,57 +44,33 @@ combinedDataset = vertcat(datasets{:});
 header = data.Properties.VariableNames;
 combinedDataset = array2table(combinedDataset, 'VariableNames', header);
 
-toc
+% step 2: Portfolio Analysis
+combinedDataset.date = cell2table(combinedDataset.date);
+combinedDataset.lme = cell2table(combinedDataset.lme);
 
-% header =  {'month_return','lme','k1','k3','k6','k12','k24'};
-% for i = 1:numel(header)
-%     combinedDataset.(cell2mat(header(i))) = cell2mat(combinedDataset.(cell2mat(header(i))));
-% end
+combinedDataset(:,6) = cell2table(table2array(combinedDataset(:,6)));
+combinedDataset(:,7) = cell2table(table2array(combinedDataset(:,7)));
+combinedDataset(:,8) = cell2table(table2array(combinedDataset(:,8)));
+combinedDataset(:,9) = cell2table(table2array(combinedDataset(:,9)));
+combinedDataset(:,10) = cell2table(table2array(combinedDataset(:,10)));
 
-combinedDataset.('month_return') = cell2mat(combinedDataset.('month_return'));
-combinedDataset.('datestr') = cell2mat(combinedDataset.('datestr'));
-% combinedDataset.('k1') = cell2mat(combinedDataset.('k1'));
-% combinedDataset.('k3') = cell2mat(combinedDataset.('k3'));
-% combinedDataset.('k6') = cell2mat(combinedDataset.('k6'));
-% combinedDataset.('k12') = cell2mat(combinedDataset.('k12'));
-% combinedDataset.('k24') = cell2mat(combinedDataset.('k24'));
+combinedDataset = combinedDataset((cell2mat(combinedDataset.k1) > 0) ...
+& (cell2mat(combinedDataset.k3) > 0)  & (cell2mat(combinedDataset.k6) > 0) ...
+& (cell2mat(combinedDataset.k12) > 0) & (cell2mat(combinedDataset.k24) > 0), :);
+%%
 
-% portfolio analysis
+[G,jdate]=findgroups(combinedDataset.date);
 
-timePoints = unique(combinedDataset.datestr);
+prctile_20=@(input)prctile(input,20);
+prctile_40=@(input)prctile(input,40);
+prctile_60=@(input)prctile(input,60);
+prctile_80=@(input)prctile(input,80);
 
-averageSpread = zeros(length(timePoints), 5);
-
-for i = 1:length(timePoints)
-    currentData = combinedDataset(combinedDataset.datestr == timePoints(i), :);
-    
-    kColumns = {'k1', 'k3', 'k6', 'k12', 'k24'};
-    
-    weightedReturns = zeros(height(currentData), length(kColumns));
-    
-    for k = kColumns
-        groups = discretize(currentData.month_return, quantile(currentData.month_return, 6));
-    
-        groupReturns = splitapply(@(x) mean(x), currentData.month_return, groups);
-    
-        spread = groupReturns(end) - groupReturns(1);
-
-        averageSpread(i,k) = spread;
-    end
+for i = 1:5
+return_m.rr20 = splitapply(prctile_20, combinedDataset(:,i+5), G);
+return_m.rr40 = splitapply(prctile_40, combinedDataset(:,i+5), G);
+return_m.rr60 = splitapply(prctile_60, combinedDataset(:,i+5), G);
+return_m.rr80 = splitapply(prctile_80, combinedDataset(:,i+5), G);
+cell2
+lmeport=rowfun(@return_bucket,return_m(:,{i+5,'rr20','rr40','rr60','rr80'}),'OutputFormat','cell');
 end
-
-
-
-
-%% Q3 
-
-% PCA factors
-data = [return_m, lag3];
-[coefMatrix, score, latent, tsquared, explainedVar] = pca(data);
-factors = spotRates * coefMatrix;
-
-% MOM factors
-
-
-
-
