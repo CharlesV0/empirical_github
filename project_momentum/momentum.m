@@ -70,10 +70,7 @@ combinedDataset = resultTable;
 toc
 
 combinedDataset = rmmissing(combinedDataset);
-%% step 2: Portfolio Analysis
-combinedDataset.code = cell2table(combinedDataset.code);
-combinedDataset.date = cell2table(combinedDataset.date);
-combinedDataset.lme = cell2table(combinedDataset.lme);
+combinedDataset.code = cell2mat(combinedDataset.code);
 
 % finding out the problematic ones
 % store = zeros(1,500);
@@ -88,16 +85,7 @@ combinedDataset.lme = cell2table(combinedDataset.lme);
 % store = store(1,1:t);
 % combinedDataset(store,:) = [];
 
-% combinedDataset.K1 = table2array(cell2table(combinedDataset.k1));
-% combinedDataset.K3 = table2array(cell2table(combinedDataset.k3));
-% combinedDataset.K6 = table2array(cell2table(combinedDataset.k6));
-% combinedDataset.K12 = table2array(cell2table(combinedDataset.k12));
-% combinedDataset.K24 = table2array(cell2table(combinedDataset.k24));
-
-% combinedDataset = combinedDataset((combinedDataset.k1 > 0) ...
-% & (combinedDataset.k3 > 0)  & (combinedDataset.k6 > 0) ...
-% & (combinedDataset.k12 > 0) & (combinedDataset.k24 > 0), :);
-%%
+%% step 2: Portfolio Analysis
 
 [G,jdate]=findgroups(combinedDataset.date);
 
