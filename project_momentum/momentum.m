@@ -1,22 +1,41 @@
 %% Q1
-clear ;
+clear
 
-% read data and stack
+tic
 
-return_m=readtable('return_monthly.xlsx','ReadVariableNames',true,'PreserveVariableNames',true,'Format','auto');
+% assign variable type
+repeatedElement = 'double'; 
+numRepeats = 125;
+repeatedCell = repmat({repeatedElement}, 1, numRepeats);
+varTypes = {['string','string',repeatedCell]};
+clear numRepeats repeatedElement repeatedCell;
+% varTypes = {'string', 'string', 'double'};
+
+% read data
+return_m=readtable('return_monthly.xlsx', 'ReadVariableNames', true, 'PreserveVariableNames', true, 'Format', 'auto');
+
+% 'VariableTypes', varTypes
+
+market_cap_lm=readtable('me_lag.xlsx','ReadVariableNames',true,'PreserveVariableNames',true,'Format','auto');
+
+% stack into long table
 stack_return = stack(return_m, return_m.Properties.VariableNames(3:end),'NewDataVariableName', 'month_return',...
 'IndexVariableName', 'date');
 
-market_cap_lm=readtable('me_lag.xlsx','ReadVariableNames',true,'PreserveVariableNames',true,'Format','auto');
 stack_lme = stack(market_cap_lm, market_cap_lm.Properties.VariableNames(3:end),'NewDataVariableName', 'lme',...
 'IndexVariableName', 'date');
 
-% clear NaN
+% merge
 merge_table = innerjoin(stack_return,stack_lme);
+
+% clear NaN
 merge_table = rmmissing(merge_table);
 
+% clear stack_lme return_m market_cap_lm stack_return
+toc
 
 %% Q2
+tic
 % create a new dataset with previous K=frequency months return
 all_codes = merge_table.code;
 code_set = unique(all_codes);
@@ -42,3 +61,23 @@ end
 combinedDataset = vertcat(datasets{:});
 header = data.Properties.VariableNames;
 combinedDataset = array2table(combinedDataset, 'VariableNames', header);
+
+toc
+
+% portfolio analysis
+
+
+
+
+%% Q3 
+
+% PCA factors
+data = [return_m, lag3];
+[coefMatrix, score, latent, tsquared, explainedVar] = pca(data);
+factors = spotRates * coefMatrix;
+
+% MOM factors
+
+
+
+
