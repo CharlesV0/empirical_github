@@ -2,8 +2,8 @@
 ### Q(b)
 average equal-weighted return spread between high and low previous stock returns portfolios
 
-We find there is/isn't Momentum effect / Reversal effect exists in Chinese stock markets.
-As we can see in the return spread between the highest previous return group and the lowest group, when K=……
+We find there is Momentum effect exists in Chinese stock markets.
+As we can see in the return spread between the highest previous return group and the lowest group, when K=1, the return rate difference is 12.70%, which is very considerable. As the lagged period number K increases, we witness a stricly decreasing return rate difference. When K =3, it is 6.87%; when K = 6, it is 5.21%; when K = 12, it is 3.47%; when K = 24, it is 2.75%. This indicates two points economically. First, we do not deny the potential existence of Reversal effect, but in less than two years, it can be hard to observe it, if does exist. Second, the Momentum effect is declining with longer lagged periods. This suits the economic intuition since we believe the potential profit from arbitrage will decrease along the time, and disappear eventually in the long term.
 
 
 ### Q(c)
