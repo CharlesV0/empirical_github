@@ -9,3 +9,11 @@ As we can see in the return spread between the highest previous return group and
 ### Q(c)
 
 第一个主成分代表市场整体收益主要有group()提供；第二个主成分代表除去第一个主成分外，group()最大程度解释了剩余方差
+- PC1
+The first principal component captures the common trend in the dataset.
+Economically, PC1 might calibrate the overall market fluctuation or a "market factor" that affects all portfolios.
+If all portfolio returns fluctuate together to some extent, PC1 would capture this shared variance. And the effect of PC1 is much more significant than other component.
+- PC2
+The second principal component captures the next most significant pattern in the data after eliminating the effect of the first factor, while showing a much less volume of effect.(PC1 is more than 10times stronger than PC2)
+In economic terms, PC2 might represent a sector-specific or style-specific trend, such as a growth vs. value factor, or a size factor (large-cap vs. small-cap).
+PC2 might be highlighting variations in portfolio returns that are not explained by broad market movements.
