@@ -81,8 +81,8 @@ combinedDataset.code = cell2mat(combinedDataset.code);
 
 
 %% step 2: Portfolio Analysis
-
-[G,jdate]=findgroups(combinedDataset.date);
+tic
+[G,~]=findgroups(combinedDataset.date);
 
 prctile_20=@(input)prctile(input,20);
 prctile_40=@(input)prctile(input,40);
@@ -109,9 +109,10 @@ for i = 1:5
     spread(i) = table2array(High_rr) - table2array(Low_rr);
 end
 
-
+clear prctile_80 prctile_60 prctile_40 prctile_20;
+toc
 %% Q3
-
+tic
 pca_data = (zeros(length(dateseries),5));
 
 %求k=3时group1-group5的平均收益
@@ -146,4 +147,10 @@ secondPC = score(:, 2);
 
 %第一个主成分代表市场整体收益主要有group()提供；第二个主成分代表除去第一个主成分外，group()
 %最大程度解释了剩余方差
-pca_data(:,6) = pca_data(:,5) - pca_data(:,1);
+
+MOM_factor = pca_data(:,5) - pca_data(:,1);
+
+
+clear group1 group2 group3 group4 group5;
+
+toc
