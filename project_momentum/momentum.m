@@ -31,7 +31,7 @@ merge_table = innerjoin(stack_return,stack_lme);
 % clear NaN
 merge_table = rmmissing(merge_table);
 
-clear stack_lme return_m market_cap_lm stack_return varTypes
+clear return_m stack_lme market_cap_lm stack_return varTypes
 
 toc
 
@@ -72,8 +72,8 @@ toc
 combinedDataset = rmmissing(combinedDataset);
 %% step 2: Portfolio Analysis
 combinedDataset.code = cell2table(combinedDataset.code);
-combinedDataset.date = cell2table(combinedDataset.date);
-combinedDataset.lme = cell2table(combinedDataset.lme);
+%combinedDataset.date = cell2table(combinedDataset.date);
+%combinedDataset.lme = cell2table(combinedDataset.lme);
 
 % finding out the problematic ones
 % store = zeros(1,500);
@@ -97,7 +97,6 @@ combinedDataset.lme = cell2table(combinedDataset.lme);
 % combinedDataset = combinedDataset((combinedDataset.k1 > 0) ...
 % & (combinedDataset.k3 > 0)  & (combinedDataset.k6 > 0) ...
 % & (combinedDataset.k12 > 0) & (combinedDataset.k24 > 0), :);
-%%
 
 [G,jdate]=findgroups(combinedDataset.date);
 
@@ -106,18 +105,19 @@ prctile_40=@(input)prctile(input,40);
 prctile_60=@(input)prctile(input,60);
 prctile_80=@(input)prctile(input,80);
 
-spread = zeros(5);
+return_m_port=table();
+spread = zeros(1,5);
 for i = 1:5
-return_m.rr20 = splitapply(prctile_20, combinedDataset(:,i+5), G);
-return_m.rr40 = splitapply(prctile_40, combinedDataset(:,i+5), G);
-return_m.rr60 = splitapply(prctile_60, combinedDataset(:,i+5), G);
-return_m.rr80 = splitapply(prctile_80, combinedDataset(:,i+5), G);
-cell2
+return_m_port.rr20 = splitapply(prctile_20, combinedDataset(:,i+5), G);
+return_m_port.rr40 = splitapply(prctile_40, combinedDataset(:,i+5), G);
+return_m_port.rr60 = splitapply(prctile_60, combinedDataset(:,i+5), G);
+return_m_port.rr80 = splitapply(prctile_80, combinedDataset(:,i+5), G);
+
 %rr is the abbreviation of return rate
-rrport=rowfun(@return_bucket,return_m(:,{i+5,'rr20','rr40','rr60','rr80'}),'OutputFormat','cell');
-return_m.rrport = cell2mat(rrport);
-High = return_m((return_m.rrport == "VH"),:);
-Low = return_m((return_m.rrport == "VL"),:);
+rrport=rowfun(@return_bucket,return_m_port(:,:),'OutputFormat','cell');
+return_m_port.rrport = cell2mat(rrport);
+High = return_m_port((return_m_port.rrport == "VH"),:);
+Low = return_m_port((return_m_port.rrport == "VL"),:);
 High_rr = mean(High(:,i+5));
 Low_rr = mean(Low(:,i+5));
 
