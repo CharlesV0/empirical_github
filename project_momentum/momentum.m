@@ -89,7 +89,6 @@ combinedDataset.code = cell2mat(combinedDataset.code);
 
 %% step 2: Portfolio Analysis
 
-
 [G,jdate]=findgroups(combinedDataset.date);
 
 prctile_20=@(input)prctile(input,20);
@@ -97,24 +96,37 @@ prctile_40=@(input)prctile(input,40);
 prctile_60=@(input)prctile(input,60);
 prctile_80=@(input)prctile(input,80);
 
-return_m_port=table();
 spread = zeros(1,5);
+%spread = zeros(length(unique(combinedDataset.date)),5);
+dateseries = unique(combinedDataset.date);
 for i = 1:5
-return_m_port.rr20 = splitapply(prctile_20, combinedDataset(:,i+5), G);
-return_m_port.rr40 = splitapply(prctile_40, combinedDataset(:,i+5), G);
-return_m_port.rr60 = splitapply(prctile_60, combinedDataset(:,i+5), G);
-return_m_port.rr80 = splitapply(prctile_80, combinedDataset(:,i+5), G);
-
+    Separatepoint = [splitapply(prctile_20, combinedDataset(:,i+5), G) splitapply(prctile_40, combinedDataset(:,i+5), G) ...
+       splitapply(prctile_60, combinedDataset(:,i+5), G) splitapply(prctile_80, combinedDataset(:,i+5), G) ];
+    Tset = table(Separatepoint(:,1),Separatepoint(:,2),Separatepoint(:,3),Separatepoint(:,4));
+    Tset.Properties.VariableNames = ["rr20","rr40","rr60","rr80"];
+    Tset.date = unique(combinedDataset.date);
+    new_combinedDataset = outerjoin(combinedDataset,Tset);
 %rr is the abbreviation of return rate
-rrport=rowfun(@return_bucket,return_m_port(:,:),'OutputFormat','cell');
-return_m_port.rrport = cell2mat(rrport);
-High = return_m_port((return_m_port.rrport == "VH"),:);
-Low = return_m_port((return_m_port.rrport == "VL"),:);
+rrport=rowfun(@return_bucket,new_combinedDataset(:,[i+5 11 12 13 14]),'OutputFormat','cell');
+new_combinedDataset.rrport = rrport;
+High = new_combinedDataset((new_combinedDataset.rrport == "VH"),:);
+Low = new_combinedDataset((new_combinedDataset.rrport == "VL"),:);
 High_rr = mean(High(:,i+5));
 Low_rr = mean(Low(:,i+5));
-
-spread(i) = High_rr - Low_rr;
+spread(i) = table2array(High_rr) - table2array(Low_rr);
 end
+
+% new_G = findgroups(new_combinedDataset.date_combinedDataset, new_combinedDataset.rrport);
+% rr_distribution = splitapply(@mean, new_combinedDataset(:,i+5), new_G);
+% for j = 1: length(unique(new_combinedDataset.date_combinedDataset))
+% date = dateseries(j);
+% % High = new_combinedDataset((new_combinedDataset.rrport == "VH" & new_combinedDataset.date_combinedDataset == date),:);
+% % Low = new_combinedDataset((new_combinedDataset.rrport == "VL" & new_combinedDataset.date_combinedDataset == date),:);
+% % High_rr = mean(High(:,i+5));
+% % Low_rr = mean(Low(:,i+5));
+% % spread(j, i) = table2array(High_rr) - table2array(Low_rr);
+% end
+
 
 %% Q3
 timePoints = unique(combinedDataset.date);
