@@ -64,7 +64,42 @@ combinedDataset = array2table(combinedDataset, 'VariableNames', header);
 
 toc
 
+% header =  {'month_return','lme','k1','k3','k6','k12','k24'};
+% for i = 1:numel(header)
+%     combinedDataset.(cell2mat(header(i))) = cell2mat(combinedDataset.(cell2mat(header(i))));
+% end
+
+combinedDataset.('month_return') = cell2mat(combinedDataset.('month_return'));
+combinedDataset.('datestr') = cell2mat(combinedDataset.('datestr'));
+% combinedDataset.('k1') = cell2mat(combinedDataset.('k1'));
+% combinedDataset.('k3') = cell2mat(combinedDataset.('k3'));
+% combinedDataset.('k6') = cell2mat(combinedDataset.('k6'));
+% combinedDataset.('k12') = cell2mat(combinedDataset.('k12'));
+% combinedDataset.('k24') = cell2mat(combinedDataset.('k24'));
+
 % portfolio analysis
+
+timePoints = unique(combinedDataset.datestr);
+
+averageSpread = zeros(length(timePoints), 5);
+
+for i = 1:length(timePoints)
+    currentData = combinedDataset(combinedDataset.datestr == timePoints(i), :);
+    
+    kColumns = {'k1', 'k3', 'k6', 'k12', 'k24'};
+    
+    weightedReturns = zeros(height(currentData), length(kColumns));
+    
+    for k = kColumns
+        groups = discretize(currentData.month_return, quantile(currentData.month_return, 6));
+    
+        groupReturns = splitapply(@(x) mean(x), currentData.month_return, groups);
+    
+        spread = groupReturns(end) - groupReturns(1);
+
+        averageSpread(i,k) = spread;
+    end
+end
 
 
 
