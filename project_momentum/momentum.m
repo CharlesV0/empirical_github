@@ -106,13 +106,22 @@ prctile_40=@(input)prctile(input,40);
 prctile_60=@(input)prctile(input,60);
 prctile_80=@(input)prctile(input,80);
 
+spread = zeros(5);
 for i = 1:5
 return_m.rr20 = splitapply(prctile_20, combinedDataset(:,i+5), G);
 return_m.rr40 = splitapply(prctile_40, combinedDataset(:,i+5), G);
 return_m.rr60 = splitapply(prctile_60, combinedDataset(:,i+5), G);
 return_m.rr80 = splitapply(prctile_80, combinedDataset(:,i+5), G);
+cell2
+%rr is the abbreviation of return rate
+rrport=rowfun(@return_bucket,return_m(:,{i+5,'rr20','rr40','rr60','rr80'}),'OutputFormat','cell');
+return_m.rrport = cell2mat(rrport);
+High = return_m((return_m.rrport == "VH"),:);
+Low = return_m((return_m.rrport == "VL"),:);
+High_rr = mean(High(:,i+5));
+Low_rr = mean(Low(:,i+5));
 
-lmeport=rowfun(@return_bucket,return_m(:,{i+5,'rr20','rr40','rr60','rr80'}),'OutputFormat','cell');
+spread(i) = High_rr - Low_rr;
 end
 
 %% Q3
