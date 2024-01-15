@@ -70,7 +70,7 @@ combinedDataset = resultTable;
 toc
 
 combinedDataset = rmmissing(combinedDataset);
-combinedDataset.code = cell2table(combinedDataset.code);
+combinedDataset.code = cell2mat(combinedDataset.code);
 
 % finding out the problematic ones
 % store = zeros(1,500);
