@@ -97,7 +97,7 @@ prctile_60=@(input)prctile(input,60);
 prctile_80=@(input)prctile(input,80);
 
 spread = zeros(1,5);
-%spread = zeros(length(unique(combinedDataset.date)),5);
+
 dateseries = unique(combinedDataset.date);
 for i = 1:5
     Separatepoint = [splitapply(prctile_20, combinedDataset(:,i+5), G) splitapply(prctile_40, combinedDataset(:,i+5), G) ...
@@ -114,7 +114,9 @@ Low = new_combinedDataset((new_combinedDataset.rrport == "VL"),:);
 High_rr = mean(High(:,i+5));
 Low_rr = mean(Low(:,i+5));
 spread(i) = table2array(High_rr) - table2array(Low_rr);
+
 end
+
 
 % new_G = findgroups(new_combinedDataset.date_combinedDataset, new_combinedDataset.rrport);
 % rr_distribution = splitapply(@mean, new_combinedDataset(:,i+5), new_G);
