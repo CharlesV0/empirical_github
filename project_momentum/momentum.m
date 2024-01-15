@@ -88,3 +88,17 @@ return_m.rr80 = splitapply(prctile_80, combinedDataset(:,i+5), G);
 cell2
 lmeport=rowfun(@return_bucket,return_m(:,{i+5,'rr20','rr40','rr60','rr80'}),'OutputFormat','cell');
 end
+
+%Q3
+pca_table = zeros(length(timePoints),5);
+
+%填入k=3时group1-group5的平均收益
+
+[coeff, score, latent, ~, explained] = pca(pca_table);
+
+firstPC = score(:, 1);
+secondPC = score(:, 2);
+
+%第一个主成分代表市场整体收益主要有group()提供；第二个主成分代表除去第一个主成分外，group()
+%最大程度解释了剩余方差
+pca_table.MOM = pca_table.group5 - pca_table.group1;
