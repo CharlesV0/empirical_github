@@ -5,6 +5,9 @@ clear ;
 
 return_m=readtable('return_monthly.xlsx','ReadVariableNames',true,'PreserveVariableNames',true,'Format','auto');
 
+%%
+
+%%
 stack_return = stack(return_m, return_m.Properties.VariableNames(3:end),'NewDataVariableName', 'month_return',...
 'IndexVariableName', 'date');
 
@@ -47,16 +50,27 @@ combinedDataset = array2table(combinedDataset, 'VariableNames', header);
 % step 2: Portfolio Analysis
 combinedDataset.date = cell2table(combinedDataset.date);
 combinedDataset.lme = cell2table(combinedDataset.lme);
+%%
+store = zeros(200);
+t = 0;
+for i = 2:height(combinedDataset)
+if iscell(table2array(cell2table(combinedDataset.k24(i-1:i))))
+    t = t+1;
+    store(t) = i;
+end
+store = store(1:t);
+combinedDataset(store,:) = [];
+end
+%%
+combinedDataset.K1 = table2array(cell2table(combinedDataset.k1));
+combinedDataset.K3 = table2array(cell2table(combinedDataset.k3));
+combinedDataset.K6 = table2array(cell2table(combinedDataset.k6));
+combinedDataset.K12 = table2array(cell2table(combinedDataset.k12));
+combinedDataset.K24 = table2array(cell2table(combinedDataset.k24));
 
-combinedDataset(:,6) = cell2table(table2array(combinedDataset(:,6)));
-combinedDataset(:,7) = cell2table(table2array(combinedDataset(:,7)));
-combinedDataset(:,8) = cell2table(table2array(combinedDataset(:,8)));
-combinedDataset(:,9) = cell2table(table2array(combinedDataset(:,9)));
-combinedDataset(:,10) = cell2table(table2array(combinedDataset(:,10)));
-
-combinedDataset = combinedDataset((cell2mat(combinedDataset.k1) > 0) ...
-& (cell2mat(combinedDataset.k3) > 0)  & (cell2mat(combinedDataset.k6) > 0) ...
-& (cell2mat(combinedDataset.k12) > 0) & (cell2mat(combinedDataset.k24) > 0), :);
+combinedDataset = combinedDataset((combinedDataset.k1 > 0) ...
+& (combinedDataset.k3 > 0)  & (combinedDataset.k6 > 0) ...
+& (combinedDataset.k12 > 0) & (combinedDataset.k24 > 0), :);
 %%
 
 [G,jdate]=findgroups(combinedDataset.date);
