@@ -3,13 +3,6 @@ clear
 
 tic
 
-% assign vardoc iabnanmeanle type
-% repeatedElement = 'double'; 
-% numRepeats = 125;
-% repeatedCell = repmat({repeatedElement}, 1, numRepeats);
-% varTypes = {['string','string',repeatedCell]};
-% clear numRepeats repeatedElement repeatedCell;
-% varTypes = {'string', 'string', 'double'};
 
 % read data
 return_m=readtable('return_monthly.xlsx', 'ReadVariableNames', true, 'PreserveVariableNames', true, 'Format', 'auto');
@@ -97,7 +90,7 @@ prctile_60=@(input)prctile(input,60);
 prctile_80=@(input)prctile(input,80);
 
 spread = zeros(1,5);
-
+%spread = zeros(length(unique(combinedDataset.date)),5);
 dateseries = unique(combinedDataset.date);
 for i = 1:5
     Separatepoint = [splitapply(prctile_20, combinedDataset(:,i+5), G) splitapply(prctile_40, combinedDataset(:,i+5), G) ...
@@ -106,41 +99,51 @@ for i = 1:5
     Tset.Properties.VariableNames = ["rr20","rr40","rr60","rr80"];
     Tset.date = unique(combinedDataset.date);
     new_combinedDataset = outerjoin(combinedDataset,Tset);
-%rr is the abbreviation of return rate
-rrport=rowfun(@return_bucket,new_combinedDataset(:,[i+5 11 12 13 14]),'OutputFormat','cell');
-new_combinedDataset.rrport = rrport;
-High = new_combinedDataset((new_combinedDataset.rrport == "VH"),:);
-Low = new_combinedDataset((new_combinedDataset.rrport == "VL"),:);
-High_rr = mean(High(:,i+5));
-Low_rr = mean(Low(:,i+5));
-spread(i) = table2array(High_rr) - table2array(Low_rr);
-
+    %rr is the abbreviation of return rate
+    rrport=rowfun(@return_bucket,new_combinedDataset(:,[i+5 11 12 13 14]),'OutputFormat','cell');
+    new_combinedDataset.rrport = rrport;
+    High = new_combinedDataset((new_combinedDataset.rrport == "VH"),:);
+    Low = new_combinedDataset((new_combinedDataset.rrport == "VL"),:);
+    High_rr = mean(High(:,i+5));
+    Low_rr = mean(Low(:,i+5));
+    spread(i) = table2array(High_rr) - table2array(Low_rr);
 end
 
 
-% new_G = findgroups(new_combinedDataset.date_combinedDataset, new_combinedDataset.rrport);
-% rr_distribution = splitapply(@mean, new_combinedDataset(:,i+5), new_G);
-% for j = 1: length(unique(new_combinedDataset.date_combinedDataset))
-% date = dateseries(j);
-% % High = new_combinedDataset((new_combinedDataset.rrport == "VH" & new_combinedDataset.date_combinedDataset == date),:);
-% % Low = new_combinedDataset((new_combinedDataset.rrport == "VL" & new_combinedDataset.date_combinedDataset == date),:);
-% % High_rr = mean(High(:,i+5));
-% % Low_rr = mean(Low(:,i+5));
-% % spread(j, i) = table2array(High_rr) - table2array(Low_rr);
-% end
-
-
 %% Q3
-timePoints = unique(combinedDataset.date);
-pca_table = zeros(length(timePoints),5);
 
-%填入k=3时group1-group5的平均收益
+pca_data = (zeros(length(dateseries),5));
 
-[coeff, score, latent, ~, explained] = pca(pca_table);
+%求k=3时group1-group5的平均收益
+i=2;
+new_G = findgroups(new_combinedDataset.date_combinedDataset, new_combinedDataset.rrport);
+rr_distribution = splitapply(@mean, new_combinedDataset(:,i+5), new_G);
+
+for j = 1: length(unique(new_combinedDataset.date_combinedDataset))
+    date = dateseries(j);
+    group1 = new_combinedDataset((new_combinedDataset.rrport == "VH" & new_combinedDataset.date_combinedDataset == date),:);
+    group2 = new_combinedDataset((new_combinedDataset.rrport == "H" & new_combinedDataset.date_combinedDataset == date),:);
+    group3 = new_combinedDataset((new_combinedDataset.rrport == "M" & new_combinedDataset.date_combinedDataset == date),:);
+    group4 = new_combinedDataset((new_combinedDataset.rrport == "L" & new_combinedDataset.date_combinedDataset == date),:);
+    group5 = new_combinedDataset((new_combinedDataset.rrport == "VL" & new_combinedDataset.date_combinedDataset == date),:);
+    
+    gVH = table2array(mean(group1(:,i+5)));
+    gH = table2array(mean(group2(:,i+5)));
+    gM = table2array(mean(group3(:,i+5)));
+    gL = table2array(mean(group4(:,i+5)));
+    gVL = table2array(mean(group5(:,i+5)));
+
+    
+    pca_data(j,:) = [gVL,gL,gM,gH,gVH];
+end
+
+% pca_table = array2table(pca_table,"VariableNames",["gVL","gL","gM",'gH','gVH']);
+
+[coeff, score, latent, ~, explained] = pca(pca_data);
 
 firstPC = score(:, 1);
 secondPC = score(:, 2);
 
 %第一个主成分代表市场整体收益主要有group()提供；第二个主成分代表除去第一个主成分外，group()
 %最大程度解释了剩余方差
-pca_table.MOM = pca_table.group5 - pca_table.group1;
+pca_data(:,6) = pca_data(:,5) - pca_data(:,1);
